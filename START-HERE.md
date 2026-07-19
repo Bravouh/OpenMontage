@@ -28,11 +28,13 @@ OpenMontage/                 (bản clone của anh)
 
 **Việc tay:** chọn 1 case tai nạn có official report, tự dựng 1 video 45' bằng Shotcut/CapCut, tự xem lại, ghi chỗ chán.
 
-**Cài `claude-watch` rồi paste prompt này (chạy cho từng video top):**
+**Cài skill `/watch` (đã cài, gọi bằng lệnh `/watch`) rồi paste prompt này (chạy cho từng video top):**
+
+> **Phân vai:** `/watch` chỉ là "con mắt" — nó tải video, cắt frame + lấy transcript rồi đưa cho Claude. Nó KHÔNG tự phân tích retention. Phần mổ retention beat bên dưới do PROMPT này điều khiển, không phải skill tự đúc. (Skill retention-longform mới là nơi công thức được đúc lại, ở Phase 4.)
 
 ```
-Dùng skill claude-watch. Xem video này: <URL một docudrama aviation top, ví dụ Mayday/Disaster Breakdown>.
-Phân tích cho tôi CÔNG THỨC GIỮ CHÂN, không tóm tắt nội dung:
+/watch <URL một docudrama aviation top, ví dụ Mayday/Disaster Breakdown>
+Sau khi có frame + transcript, phân tích cho tôi CÔNG THỨC GIỮ CHÂN, không tóm tắt nội dung:
 - Hook 30 giây đầu họ làm gì (mở bằng gì)?
 - Các open loop lớn đặt ở đâu, đóng lại lúc nào?
 - Cứ mấy phút họ có một điểm nhấn / tiết lộ mới (re-hook cadence)?
@@ -146,7 +148,7 @@ Không tự merge, không tự sang khâu sản xuất khi tôi chưa duyệt.
 
 | Phase | Khi làm | File điều khiển tạo/dùng |
 |---|---|---|
-| 0 | Ngay | (không) — chạy claude-watch |
+| 0 | Ngay | (không) — chạy skill `/watch` |
 | 1 | Sau khi chuẩn bị máy | Copy toàn bộ bộ này vào repo |
 | 2 | Sau P1 | omnivoice_tts.py, voices.json (Claude Code tạo) |
 | 3 | Sau P2 | skills humanize/docudrama-script |
