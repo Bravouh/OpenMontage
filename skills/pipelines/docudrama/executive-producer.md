@@ -1,4 +1,4 @@
-# Executive Producer — Docudrama Pipeline (minimal: research → script → humanize → retention_check)
+# Executive Producer — Docudrama Pipeline (minimal: research → script → humanize → retention_check → scene_plan)
 
 ## When to Use
 
@@ -7,9 +7,9 @@ pipeline serially, spawning each stage director and stopping at every manifest
 gate for the human's approval (RULE #4). You are the stateful brain; directors
 are stateless workers.
 
-**Scope of this minimal EP.** Four of the eight stages have directors so far:
-`research → script → humanize → retention_check`. You run those four and then
-**stop** — the next stage, `scene_plan`, has no director yet. Do not fabricate
+**Scope of this minimal EP.** Five of the eight stages have directors so far:
+`research → script → humanize → retention_check → scene_plan`. You run those five
+and then **stop** — the next stage, `assets`, has no director yet. Do not fabricate
 downstream stages or pretend they ran.
 
 ## Prerequisites
@@ -17,7 +17,7 @@ downstream stages or pretend they ran.
 | Layer | Resource | Purpose |
 |-------|----------|---------|
 | Manifest | `pipeline_defs/docudrama.yaml` | Stage order, gates, review focus, success criteria |
-| Directors | `research-director`, `script-director`, `humanize-director`, `retention-director` | Stage execution |
+| Directors | `research-director`, `script-director`, `humanize-director`, `retention-director`, `scene-director` | Stage execution |
 | Subagent | `retention-critic` | Qualitative retention diagnosis at the retention_check stage |
 | Meta | `skills/meta/checkpoint-protocol.md`, `skills/meta/reviewer.md` | Gating + review |
 | Schemas | `research_brief`, `script` | Validation |
@@ -36,6 +36,7 @@ EP_STATE:
     script:   null   # → script
     humanize: null   # → script (humanized; canonical latest)
     retention_check: null   # → retention_report (gate before scene_plan)
+    scene_plan: null   # → scene_plan (shot-level; STATIC + GRAPHIC, no idle >12s)
   revision_counts: {}
 ```
 
@@ -92,17 +93,27 @@ The manifest's `human_approval_default` is **binding** — enforced by
   - Fail / revision → send the script back to `script` or `humanize` per the
     failing rule, then re-run this stage. Do NOT advance to scene_plan on a fail.
 
+**Stage 5 — scene_plan (GATED).**
+- Spawn `scene-director` with the retention-passed humanized script.
+- It builds a SHOT-level plan: shots = ceil(section_seconds/10); STATIC <=12s (split),
+  GRAPHIC >12s only with staged reveals (internal motion), VIDEO_AI minimal (0 for v1).
+- Review: `static_idle_over_12s == 0`; every shot >12s is GRAPHIC with `reveal_stages`;
+  every overlay citation mapped; no CLIP queries/sources; Kiểu A only.
+- Write `status="awaiting_human"`, present (shot count, kind distribution, >12s list), and
+  **END YOUR TURN**.
+  - Approved → rewrite `status="completed"`, `human_approved=True`.
+
 ### Phase 2: Stop at the edge of what's wired
 
-After retention_check is approved, **STOP**. Report honestly:
+After scene_plan is approved, **STOP**. Report honestly:
 
 ```
-First-flow complete: research → script → humanize → retention_check (all approved).
-Next stage per manifest: scene_plan — NO director skill yet.
-The pipeline pauses here until scene-director (and the rest) are authored.
+First-flow complete: research → script → humanize → retention_check → scene_plan (all approved).
+Next stage per manifest: assets — NO director skill yet.
+The pipeline pauses here until asset-director (and the rest) are authored.
 ```
 
-Do not run, simulate, or summarize `scene_plan` or any later stage.
+Do not run, simulate, or summarize `assets` or any later stage.
 
 ## Gate Discipline (Binding)
 
@@ -122,6 +133,7 @@ Do not run, simulate, or summarize `scene_plan` or any later stage.
 | script | Word count fits 40–50 min at ~120–140 wpm; every claim has `source_ref`; all enhancement cues are Kiểu A |
 | humanize | Diff vs pre-humanize is phrasing-only; `script` still schema-valid; timestamps + cues unchanged |
 | retention_check | `overall == pass`? causal ratio ≥ 8 (floor 5), counted not estimated? no >3-min re-hook gap? cold-open question present? If any rule fails, do NOT advance — send back per the failing rule |
+| scene_plan | `static_idle_over_12s == 0`; every shot >12s is GRAPHIC with `reveal_stages`; `shot_count ≈ ceil(total/10)` (not hardcoded); citations mapped; no retrieval; Kiểu A |
 
 ## Budget
 
