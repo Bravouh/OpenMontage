@@ -22,6 +22,9 @@ import { SystemCutaway } from "./components/SystemCutaway";
 import { CrackGrowth } from "./components/CrackGrowth";
 import { DiskFracture } from "./components/DiskFracture";
 import { MetallurgyOrigin } from "./components/MetallurgyOrigin";
+import { RedundancyState } from "./components/RedundancyState";
+import { ThrustVector } from "./components/ThrustVector";
+import { Phugoid } from "./components/Phugoid";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -456,6 +459,57 @@ export const Root: React.FC = () => {
             { label: "ultrasonic + macroetch", sub: "defect slips through", missed: true },
             { label: "final machining", sub: "+ shot peening exposes a surface the checks never saw", missed: true },
           ],
+        }}
+      />
+
+      {/* ── System-state cluster (batch 2, group B) — data from NTSB/AAR-90/06 ── */}
+      <Composition
+        id="RedundancyState"
+        component={RedundancyState}
+        durationInFrames={30 * 13}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "Three independent hydraulic systems — all lost at once",
+          citation: "NTSB/AAR-90/06, Finding 5",
+          systems: [
+            { id: "no1", label: "HYD 1 (No.1 engine, left wing)", failAt: 4.5 },
+            { id: "no3", label: "HYD 3 (No.3 engine, right wing)", failAt: 6.0 },
+            { id: "no2", label: "HYD 2 (No.2 engine, tail)", failAt: 7.5 },
+          ],
+        }}
+      />
+      <Composition
+        id="ThrustVector"
+        component={ThrustVector}
+        durationInFrames={30 * 14}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "Asymmetric thrust — the only control left",
+          citation: "NTSB/AAR-90/06, §1.1 & §2.3",
+          phases: [
+            { left: 0.5, right: 0.5, note: "symmetric thrust — wings level, no turn" },
+            { left: 0.78, right: 0.34, note: "more power on the left engine…" },
+            { left: 0.78, right: 0.34, note: "…the nose yaws right (steering by thrust alone)" },
+          ],
+        }}
+      />
+      <Composition
+        id="Phugoid"
+        component={Phugoid}
+        durationInFrames={30 * 15}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "The phugoid — a pitch oscillation they could not damp",
+          citation: "NTSB/AAR-90/06, §2.3",
+          cycles: 2.5,
+          amplitude: 0.14,
+          note: "controls gone — thrust could only chase the oscillation, never stop it",
         }}
       />
     </>
