@@ -74,6 +74,25 @@
 - [ ] **Nguyên tắc nhịp hình:** đổi visual tối thiểu mỗi 5–8 giây trong long-form. Đây là biến retention lớn nhất về hình.
 - [ ] **Ghép tầng:** FFmpeg (NVENC) làm lớp compositing + transcode cuối.
 
+### GRAPHIC components aviation cần build (Remotion) — rút từ scene_plan UA232 thật
+
+> **BẮT BUỘC animate-reveal-theo-thời-gian, KHÔNG chỉ vẽ tĩnh.** scene_plan (2026-07) cho thấy: shot GRAPHIC dài ~16s, muốn giữ chân thì phải hiện/vẽ dần qua 3–4 bước — sơ đồ đứng im 16s là tự sát retention. 25 shot GRAPHIC trong video UA232 dùng chung 13 component tái sử dụng dưới đây (0 shot STATIC nào đứng im >12s; 0 VIDEO_AI ở v1).
+
+- [ ] **flight_path** — vẽ dần vệt bay / ground-track (radar → SUX; đĩa văng → cánh đồng Alta). Path drawing theo thời gian.
+- [ ] **system_cutaway** — cutaway thân/động cơ, highlight tuần tự (3 đường thủy lực hội tụ ở đuôi; mảnh vỡ cắt từng đường).
+- [ ] **hydraulic_schematic** — sơ đồ 3 hệ độc lập, animate cạn áp về 0.
+- [ ] **redundancy_state** — đổi trạng thái theo thời gian (amber→red; gauge rơi dần; ADG thả → bơm quay → vẫn 0 psi).
+- [ ] **thrust_vector** — mũi tên lực asymmetric thrust (turn-by-thrust: ga trái → mũi yaw phải; roll về cân bằng).
+- [ ] **phugoid** — dao động pitch theo thời gian (~60s/chu kỳ: ngóc → chúi → ga ghìm).
+- [ ] **approach_geometry** — sân bay + 2 runway, vẽ dần glidepath (r31 dự định vs r22 đóng) + stat card hiện dần.
+- [ ] **disk_fracture** — đĩa quay → nứt tới vành → mảnh xuyên vỏ; biến thể zoom vào vết nứt 0.5in ở bore.
+- [ ] **crack_growth** — vết nứt bò dần theo từng chu kỳ + đường cong fatigue leo tới ngưỡng gãy.
+- [ ] **metallurgy_origin** — ingot → rèn thành đĩa → hard-alpha hiện sâu trong kim loại → gia công lộ bề mặt.
+- [ ] **chain_of_custody** — chuỗi ingot→forge→machine→inspect→engine, highlight khoảng hở hồ sơ; biến thể 6 con dấu kiểm tra hiện lần lượt ("no indication").
+- [ ] **timeline** — mốc hiện từng cái (mốc kiểm tra sản xuất; danh sách recommendation vẽ mũi tên nối).
+- [ ] **compare_state** — reveal so sánh 2 trạng thái (trained 2/3 vs thực tế mất cả 3; simulator 1-tham-số vs tất-cả; split-screen hạ-cánh vs đĩa).
+- [ ] **citation_lowerthird** (dùng chung mọi shot) — bug citation nguồn NTSB hiện lên màn (lá chắn RULE #2); 28 overlay trong video UA232.
+
 **Milestone Phase 2:** ra được 1 video 45 phút hoàn chỉnh có hình đa dạng, tự động từ topic. Đây là "1 video hoàn chỉnh" mà anh đặt mục tiêu.
 
 ---
