@@ -1,4 +1,4 @@
-# Executive Producer — Docudrama Pipeline (minimal: research → script → humanize)
+# Executive Producer — Docudrama Pipeline (minimal: research → script → humanize → retention_check)
 
 ## When to Use
 
@@ -7,17 +7,18 @@ pipeline serially, spawning each stage director and stopping at every manifest
 gate for the human's approval (RULE #4). You are the stateful brain; directors
 are stateless workers.
 
-**Scope of this minimal EP.** Only three of the eight stages have directors so
-far: `research → script → humanize`. You run those three and then **stop** — the
-next stage, `retention_check`, has no director yet. Do not fabricate downstream
-stages or pretend they ran.
+**Scope of this minimal EP.** Four of the eight stages have directors so far:
+`research → script → humanize → retention_check`. You run those four and then
+**stop** — the next stage, `scene_plan`, has no director yet. Do not fabricate
+downstream stages or pretend they ran.
 
 ## Prerequisites
 
 | Layer | Resource | Purpose |
 |-------|----------|---------|
 | Manifest | `pipeline_defs/docudrama.yaml` | Stage order, gates, review focus, success criteria |
-| Directors | `research-director`, `script-director`, `humanize-director` | Stage execution |
+| Directors | `research-director`, `script-director`, `humanize-director`, `retention-director` | Stage execution |
+| Subagent | `retention-critic` | Qualitative retention diagnosis at the retention_check stage |
 | Meta | `skills/meta/checkpoint-protocol.md`, `skills/meta/reviewer.md` | Gating + review |
 | Schemas | `research_brief`, `script` | Validation |
 | Checkpoint | `lib.checkpoint` — `init_project`, `write_checkpoint`, `read_checkpoint`, `get_next_stage` | State + gate enforcement |
@@ -34,6 +35,7 @@ EP_STATE:
     research: null   # → research_brief
     script:   null   # → script
     humanize: null   # → script (humanized; canonical latest)
+    retention_check: null   # → retention_report (gate before scene_plan)
   revision_counts: {}
 ```
 
@@ -79,17 +81,28 @@ The manifest's `human_approval_default` is **binding** — enforced by
   TURN**.
   - Approved → rewrite `status="completed"`, `human_approved=True`.
 
+**Stage 4 — retention_check (GATED).**
+- Spawn `retention-director` with the HUMANIZE checkpoint (the humanized script).
+- It scores the 5 PART-1 constraints with real counts and spawns `retention-critic`.
+- Review: the `overall` verdict; every failing rule must point at an exact spot.
+- Write `status="awaiting_human"` (never `completed` — pass or fail). Present the
+  retention_report (per-rule PASS/FAIL + the causal count + the critic's score),
+  and **END YOUR TURN**.
+  - Approved → rewrite `status="completed"`, `human_approved=True`.
+  - Fail / revision → send the script back to `script` or `humanize` per the
+    failing rule, then re-run this stage. Do NOT advance to scene_plan on a fail.
+
 ### Phase 2: Stop at the edge of what's wired
 
-After humanize is approved, **STOP**. Report honestly:
+After retention_check is approved, **STOP**. Report honestly:
 
 ```
-First-flow complete: research → script → humanize (all approved).
-Next stage per manifest: retention_check — NO director skill yet.
-The pipeline pauses here until retention-director (and the rest) are authored.
+First-flow complete: research → script → humanize → retention_check (all approved).
+Next stage per manifest: scene_plan — NO director skill yet.
+The pipeline pauses here until scene-director (and the rest) are authored.
 ```
 
-Do not run, simulate, or summarize `retention_check` or any later stage.
+Do not run, simulate, or summarize `scene_plan` or any later stage.
 
 ## Gate Discipline (Binding)
 
@@ -108,6 +121,7 @@ Do not run, simulate, or summarize `retention_check` or any later stage.
 | research | ≥ 3 data_points with source URLs; `official_report_url` present; `editorial_angle` recorded |
 | script | Word count fits 40–50 min at ~120–140 wpm; every claim has `source_ref`; all enhancement cues are Kiểu A |
 | humanize | Diff vs pre-humanize is phrasing-only; `script` still schema-valid; timestamps + cues unchanged |
+| retention_check | `overall == pass`? causal ratio ≥ 8 (floor 5), counted not estimated? no >3-min re-hook gap? cold-open question present? If any rule fails, do NOT advance — send back per the failing rule |
 
 ## Budget
 
