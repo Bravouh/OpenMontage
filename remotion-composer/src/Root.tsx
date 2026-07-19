@@ -19,6 +19,9 @@ import { LyricOverlay, LyricOverlayProps } from "./LyricOverlay";
 import { FlightPath } from "./components/FlightPath";
 import { IncidentTimeline } from "./components/IncidentTimeline";
 import { SystemCutaway } from "./components/SystemCutaway";
+import { CrackGrowth } from "./components/CrackGrowth";
+import { DiskFracture } from "./components/DiskFracture";
+import { MetallurgyOrigin } from "./components/MetallurgyOrigin";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -399,6 +402,60 @@ export const Root: React.FC = () => {
           ],
           failSequence: ["no1", "no3", "no2"],
           sourceMarker: { x: 0.84, y: 0.37, label: "No.2 engine (tail) — debris origin" },
+        }}
+      />
+
+      {/* ── Disk / crack cluster (batch 2, group A) — data from NTSB/AAR-90/06 ── */}
+      <Composition
+        id="CrackGrowth"
+        component={CrackGrowth}
+        durationInFrames={30 * 16}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "The fatigue crack — grew for years, missed at inspection",
+          citation: "NTSB/AAR-90/06, Findings 14, 19–20 & §2.6",
+          originLabel: "hard-alpha defect (from the ingot)",
+          stages: [
+            { at: 0.06, label: "defect present", sub: "formed during manufacture" },
+            { at: 0.32, label: "crack initiates", sub: "at first full-thrust cycles", flag: false },
+            { at: 0.70, label: "April 1988 inspection", sub: "~0.5 in — detectable, not caught", flag: true },
+            { at: 0.97, label: "final flight", sub: "disk fractures", flag: true },
+          ],
+        }}
+      />
+      <Composition
+        id="DiskFracture"
+        component={DiskFracture}
+        durationInFrames={30 * 16}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "Stage-1 fan disk — uncontained failure",
+          citation: "NTSB/AAR-90/06, Findings 4 & 5",
+          diskLabel: "stage-1 fan disk (titanium alloy)",
+          crackSeconds: 8,
+          fragments: 3,
+        }}
+      />
+      <Composition
+        id="MetallurgyOrigin"
+        component={MetallurgyOrigin}
+        durationInFrames={30 * 15}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "A flaw born in the metal — missed at every check",
+          citation: "NTSB/AAR-90/06, Findings 9–13",
+          stages: [
+            { label: "titanium ingot", sub: "hard-alpha defect forms here", defect: true },
+            { label: "forged into fan disk", sub: "defect carried inward" },
+            { label: "ultrasonic + macroetch", sub: "defect slips through", missed: true },
+            { label: "final machining", sub: "+ shot peening exposes a surface the checks never saw", missed: true },
+          ],
         }}
       />
     </>
