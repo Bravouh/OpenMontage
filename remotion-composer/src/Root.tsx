@@ -16,6 +16,9 @@ import { ProductReveal, ProductRevealProps } from "./components/ProductReveal";
 import { CaptionOverlay, WordCaption } from "./components/CaptionOverlay";
 import { CollageBurst, CollageBurstProps } from "./CollageBurst";
 import { LyricOverlay, LyricOverlayProps } from "./LyricOverlay";
+import { FlightPath } from "./components/FlightPath";
+import { IncidentTimeline } from "./components/IncidentTimeline";
+import { SystemCutaway } from "./components/SystemCutaway";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -329,6 +332,74 @@ export const Root: React.FC = () => {
           fadeOutSeconds: 1.5,
           overlay: true,
         } as EndTagProps}
+      />
+
+      {/* ── Docudrama GRAPHIC components (batch 1/2) — data from NTSB/AAR-90/06 ── */}
+      <Composition
+        id="FlightPath"
+        component={FlightPath}
+        durationInFrames={30 * 16}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "UA232 — Denver→Chicago leg, diverted to Sioux City",
+          citation: "after NTSB/AAR-90/06, §1.1 — schematic, not to scale",
+          schematicLabel: "SCHEMATIC · not to scale",
+          path: [
+            { x: 0.08, y: 0.70 }, { x: 0.26, y: 0.63 }, { x: 0.44, y: 0.57 },
+            { x: 0.55, y: 0.54 }, { x: 0.62, y: 0.48 }, { x: 0.66, y: 0.40 },
+          ],
+          waypoints: [
+            { x: 0.08, y: 0.70, label: "DEN — depart 14:09", at: 0.02 },
+            { x: 0.58, y: 0.66, label: "intended: Chicago O'Hare", at: 0.5 },
+            { x: 0.66, y: 0.40, label: "divert → Sioux City (SUX)", at: 0.95 },
+          ],
+          incident: { x: 0.44, y: 0.57, label: "15:16 No.2 engine fails", at: 0.42 },
+        }}
+      />
+      <Composition
+        id="IncidentTimeline"
+        component={IncidentTimeline}
+        durationInFrames={30 * 14}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "United 232 — July 19, 1989",
+          citation: "NTSB/AAR-90/06, §1.1 & §1.2",
+          events: [
+            { time: "14:09", label: "Departs Denver (leg to Chicago)", sub: "DC-10, 296 aboard, cruise FL370" },
+            { time: "15:16:10", label: "No.2 tail engine fails — uncontained", sub: "all three hydraulic systems lost" },
+            { time: "~15:29", label: "Off-duty check airman takes the throttles", sub: "asymmetric-thrust control; divert to Sioux City" },
+            { time: "16:00", label: "Touchdown, runway 22", sub: "111 lost · 185 survived" },
+          ],
+        }}
+      />
+      <Composition
+        id="SystemCutaway"
+        component={SystemCutaway}
+        durationInFrames={30 * 16}
+        fps={30}
+        width={1920}
+        height={1080}
+        defaultProps={{
+          title: "DC-10 — three hydraulic systems severed at the tail",
+          citation: "NTSB/AAR-90/06, Finding 5",
+          outline: [
+            [{ x: 0.12, y: 0.44 }, { x: 0.80, y: 0.44 }, { x: 0.86, y: 0.47 }, { x: 0.80, y: 0.50 }, { x: 0.12, y: 0.50 }, { x: 0.09, y: 0.47 }, { x: 0.12, y: 0.44 }],
+            [{ x: 0.78, y: 0.44 }, { x: 0.86, y: 0.30 }, { x: 0.90, y: 0.44 }],
+            [{ x: 0.40, y: 0.50 }, { x: 0.33, y: 0.60 }],
+            [{ x: 0.46, y: 0.50 }, { x: 0.53, y: 0.60 }],
+          ],
+          parts: [
+            { id: "no1", label: "HYD 1 · No.1 (left wing)", color: "#5AA9E6", points: [{ x: 0.33, y: 0.595 }, { x: 0.40, y: 0.50 }, { x: 0.55, y: 0.475 }, { x: 0.78, y: 0.44 }] },
+            { id: "no3", label: "HYD 3 · No.3 (right wing)", color: "#5AD1A5", points: [{ x: 0.53, y: 0.595 }, { x: 0.46, y: 0.50 }, { x: 0.60, y: 0.485 }, { x: 0.80, y: 0.45 }] },
+            { id: "no2", label: "HYD 2 · No.2 (tail)", color: "#E6C25A", points: [{ x: 0.15, y: 0.485 }, { x: 0.50, y: 0.49 }, { x: 0.82, y: 0.45 }] },
+          ],
+          failSequence: ["no1", "no3", "no2"],
+          sourceMarker: { x: 0.84, y: 0.37, label: "No.2 engine (tail) — debris origin" },
+        }}
       />
     </>
   );
