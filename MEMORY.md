@@ -19,4 +19,4 @@
 ## Bài học
 - **[lưu]** Retention 45 phút không mua được bằng skill — phải tự đúc từ (a) phân tích top aviation docs bằng claude-watch, (b) retention curve của kênh. Đây là moat.
 - **[lưu]** OpenMontage nhắm short-form (ví dụ đều 60s). Long-form 45 phút chưa được chứng minh → phải tự mở rộng pipeline + tầng retention.
-- **[env]** ffmpeg/ffprobe/yt-dlp ở C:\bin (đã vào PATH hệ thống). Nếu session Claude Code không thấy chúng (CommandNotFoundException), prefix mỗi lệnh PowerShell bằng: `$env:PATH += ';C:\bin';` <lệnh>. Nguyên nhân: tool PowerShell không giữ env giữa các call; app có thể khởi động trước khi PATH cập nhật — restart app hoặc reboot để hết cần prefix.
+- **[env]** ffmpeg/ffprobe/yt-dlp ở C:\bin, đã vào **USER PATH** (KHÔNG phải System/Machine PATH). User PATH cũng có sẵn đường winget của cả hai (ffmpeg + yt-dlp). Session Claude Code không thấy chúng (CommandNotFoundException) vì app khởi động TRƯỚC khi PATH được cập nhật — môi trường tiến trình là snapshot lúc launch, không tự cập nhật. Cách hết cần prefix: **restart app Claude Code hoặc reboot máy**. Tạm thời (nếu chưa reboot) prefix mỗi lệnh PowerShell bằng: `$env:PATH += ';C:\bin';` <lệnh>.
