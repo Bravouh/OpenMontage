@@ -1,0 +1,239 @@
+name: docudrama
+version: "1.0"
+description: >
+  Long-form (40-50 min) investigative docudrama for a US audience, niche: aviation /
+  engineering accident investigation. Kiểu A only (voiceover + atmosphere reconstruction,
+  no character consistency, no lip-sync, no acting faces). Script-driven: every script is
+  grounded in an official accident report plus an original editorial angle, then MUST pass
+  the humanize stage (on text, before TTS) and the retention-check stage before any scene
+  planning. Base style = voiceover-only + static images/2D diagrams + Remotion
+  reconstruction + on-screen source citations, ~8-12s visual cadence.
+category: custom
+stability: beta
+
+default_checkpoint_policy: guided
+
+# No reference-video ingestion: sources are official reports + first-party research, not
+# another creator's video (RULE #2 — no scraped-article-to-TTS).
+reference_input:
+  supported: false
+
+extensions:
+  custom_scripts: true
+  custom_playbooks: true
+  custom_skills: true
+  custom_tools: false
+
+# NOTE: the pipelines/docudrama/* director skills do NOT exist yet — they are the
+# follow-up authoring task, out of scope for this manifest-wiring diff. humanize-director
+# and retention-director are thin wrappers over the existing .claude/skills/humanize and
+# .claude/skills/retention-longform.
+required_skills:
+  - pipelines/docudrama/executive-producer
+  - pipelines/docudrama/research-director
+  - pipelines/docudrama/script-director
+  - pipelines/docudrama/humanize-director
+  - pipelines/docudrama/retention-director
+  - pipelines/docudrama/scene-director
+  - pipelines/docudrama/asset-director
+  - pipelines/docudrama/edit-director
+  - pipelines/docudrama/compose-director
+  - meta/reviewer
+  - meta/checkpoint-protocol
+
+orchestration:
+  mode: executive-producer
+  skill: pipelines/docudrama/executive-producer
+  budget_default_usd: 2.00
+  max_revisions_per_stage: 3
+  max_send_backs: 3
+  max_wall_time_minutes: 120
+
+compatible_playbooks:
+  custom_allowed: true
+
+stages:
+  # ── Pre-Production ──────────────────────────────────────────────
+
+  - name: research
+    skill: pipelines/docudrama/research-director
+    produces:
+      - research_brief
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Anchored on an official accident report (NTSB/AAIB/equivalent), cited with URL
+      - At least one original editorial angle beyond the report's summary (RULE #2)
+      - Timeline of events reconstructed from primary sources, not secondary articles
+      - Key technical/human-factors causes identified and sourced
+    success_criteria:
+      - Schema-valid research_brief
+      - Official report cited with a resolvable source URL
+      - At least one editorial angle recorded in metadata
+
+  # ── Production ──────────────────────────────────────────────────
+
+  - name: script
+    skill: pipelines/docudrama/script-director
+    required_artifacts_in:
+      - research_brief
+    produces:
+      - script
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Grounded in the official report + the recorded editorial angle (RULE #2)
+      - Kiểu A only — no character consistency, no lip-sync, no acting faces (RULE #1)
+      - Target runtime 40-50 min, divided into clearly labelled chapters
+      - On-screen citation cues present where claims are made
+    success_criteria:
+      - Schema-valid script artifact
+      - Chapters present; total duration in the 40-50 min band
+      - Every factual claim traces back to a research_brief source
+
+  # ── Mandatory text gates (RULE #3): humanize then retention, BEFORE scene planning ──
+
+  - name: humanize
+    skill: pipelines/docudrama/humanize-director   # wraps .claude/skills/humanize
+    required_artifacts_in:
+      - script
+    produces:
+      - script            # re-emits the humanized script; scene_plan reads this version
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Humanize ran on the FULL script text, before any TTS (RULE #3)
+      - AI-writing tells removed (inflated significance, formulaic rhythm, em-dash/boldface overuse, hedging)
+      - Voice/register consistent with the channel; narration reads as a person, not a model
+      - No factual content altered while humanizing — only phrasing
+    success_criteria:
+      - Humanized script artifact present and schema-valid
+      - Diff vs. the pre-humanize script is phrasing-only (no new/removed facts)
+
+  - name: retention_check
+    skill: pipelines/docudrama/retention-director   # wraps .claude/skills/retention-longform + retention-critic subagent
+    required_artifacts_in:
+      - script
+    produces:
+      - retention_report
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      # PART 1 of retention-longform — violating ANY one = FAIL (do not approve → scene_plan stays blocked)
+      - "1. Causal structure: (but+so+because+however):(then+and then+suddenly) ratio >= 8:1 for this voiceover style (absolute floor 5:1)"
+      - "2. Cold-open <= 60s opens >= 1 clear open loop; no scene-setting/biography before a question"
+      - "3. Nested open loops: >= 1 outer loop opened cold, closed only near the end, with an outro callback; inner loops all closed"
+      - "4. Re-hook cadence: no stretch > 3 min without a turn/reveal/new element; tighten to ~1-1.5 min at climax"
+      - "5. Sponsor/CTA never before a payoff or during rising tension; full read after climax, CTA after the moral"
+    success_criteria:
+      - Schema-valid retention_report recording pass/fail for each of the 5 PART-1 rules
+      - All 5 PART-1 rules PASS (any single violation = fail → send script back)
+
+  - name: scene_plan
+    skill: pipelines/docudrama/scene-director
+    required_artifacts_in:
+      - script
+    optional_artifacts_in:
+      - retention_report
+    produces:
+      - scene_plan
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Full humanized script covered with no gaps
+      - "Visual cadence ~8-12s; no static frame > ~15s (base style)"
+      - Kiểu A shots only (silhouettes, object close-ups, diagrams, faceless) — RULE #1
+      - Remotion reconstruction beats (flight path, timeline, system cutaway) planned where useful
+      - On-screen source citations mapped to the scenes that make claims
+    success_criteria:
+      - Schema-valid scene_plan with per-scene shot descriptions and citation cues
+      - Sum of scene holds within 10% of script duration
+
+  - name: assets
+    skill: pipelines/docudrama/asset-director
+    required_artifacts_in:
+      - scene_plan
+      - script
+    produces:
+      - asset_manifest
+    required_tools:
+      - tts_selector
+      - image_selector
+    optional_tools:
+      - video_selector
+      - diagram_gen
+      - music_gen
+    tools_available:
+      - tts_selector
+      - image_selector
+      - video_selector
+      - diagram_gen
+      - music_gen
+    checkpoint_required: true
+    human_approval_default: true
+    review_focus:
+      - Narration covers all script chapters; voice via OmniVoice voice library (voice_id -> ref_audio)
+      - Every asset has provenance (source, original_url, license)
+      - Image/diagram style consistent across the whole timeline
+      - Music plan present per chapter (mood-driven)
+    success_criteria:
+      - Schema-valid asset_manifest
+      - One narration asset per chapter; all file paths resolve
+
+  - name: edit
+    skill: pipelines/docudrama/edit-director
+    required_artifacts_in:
+      - scene_plan
+      - asset_manifest
+    optional_artifacts_in:
+      - script
+    produces:
+      - edit_decisions
+    tools_available: []
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - All cuts reference valid assets from the manifest
+      - Visual cadence honoured; no adjacent cuts sharing subject AND scale
+      - Music ducking under narration configured
+      - On-screen citations timed to their claims
+    success_criteria:
+      - Schema-valid edit_decisions
+      - Timeline covers full duration; within 10% of script duration
+
+  - name: compose
+    skill: pipelines/docudrama/compose-director
+    required_artifacts_in:
+      - edit_decisions
+      - asset_manifest
+    optional_artifacts_in:
+      - scene_plan
+    produces:
+      - render_report
+      - final_review
+    required_tools:
+      - video_compose
+      - audio_mixer
+    optional_tools:
+      - video_stitch
+      - color_grade
+    tools_available:
+      - video_compose
+      - audio_mixer
+      - video_stitch
+      - color_grade
+    checkpoint_required: true
+    human_approval_default: false
+    review_focus:
+      - Output exists, is playable, passes ffprobe (render out and WATCH before reporting done)
+      - "Duration within +/-5% of target (40-50 min)"
+      - Narration/music balance clean; ducking audible
+      - "altered/synthetic content disclosure prepared for upload metadata (RULE #6)"
+    success_criteria:
+      - Schema-valid render_report with output paths
+      - Output file exists and passes ffprobe validation

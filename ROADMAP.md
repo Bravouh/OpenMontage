@@ -44,6 +44,10 @@
 - Lớp giữ chân: bổ sung **retention architecture** — hook 30s, open loops, re-hook mỗi 3–5 phút, chương có payoff. Đây là thứ skill có sẵn KHÔNG tự lo; anh phải tự viết 1 skill/prompt riêng dựa trên công thức rút ra ở Phase 0.
 - Lớp humanize: `humanize-writing` tẩy AI-tell (bắt buộc, xem cảnh báo policy cuối file).
 
+**1.1b — Pipeline manifest (2026-07-19)**
+- [x] `pipeline_defs/docudrama.yaml`: đóng luồng `research → script → HUMANIZE → RETENTION-CHECK → scene_plan → assets → edit → compose`. humanize + retention_check là stage gated (`human_approval_default: true`) chèn giữa script và scene_plan → engine chặn cứng sang scene_plan khi humanize chưa chạy hoặc retention chưa được duyệt. 5 ràng buộc PART-1 của `retention-longform` nằm trong `success_criteria`.
+- [ ] **CHƯA CHẠY THẬT — task tiếp theo:** các director skill `pipelines/docudrama/*` (executive-producer, research/script/humanize/retention/scene/asset/edit/compose-director) CHƯA tồn tại. Manifest load qua schema nhưng chưa có agent điều khiển stage. humanize-director + retention-director sẽ là wrapper mỏng quanh `.claude/skills/humanize` và `.claude/skills/retention-longform`.
+
 **1.2 — Voice engine (voice *acting*, không chỉ narration)**
 - OmniVoice (k2-fsa, Apache 2.0) chạy qua FastAPI/OpenAI-compatible server, self-host.
 - **Docudrama cần nhiều giọng:** 1 narrator cố định + các giọng nhân vật. Khóa mỗi giọng bằng 1 ref_audio riêng, generate ref 1 lần rồi tái dùng.
