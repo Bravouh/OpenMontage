@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '--- ĐỌC TRƯỚC KHI LÀM ---'; echo '[MEMORY.md]'; sed -n '1,60p' MEMORY.md 2>/dev/null; echo ''; echo '[ROADMAP.md — task đang mở]'; grep -n '\\[ \\]' ROADMAP.md 2>/dev/null | head -20"
+          }
+        ]
+      }
+    ]
+  }
+}
