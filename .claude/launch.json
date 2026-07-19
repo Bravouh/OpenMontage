@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "backlot",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["-m", "backlot", "serve", "--port", "4750"],
       "port": 4750
     },
